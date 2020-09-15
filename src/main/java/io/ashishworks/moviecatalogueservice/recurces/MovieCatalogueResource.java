@@ -3,6 +3,7 @@ package io.ashishworks.moviecatalogueservice.recurces;
 import io.ashishworks.moviecatalogueservice.models.CatologueItem;
 import io.ashishworks.moviecatalogueservice.models.Movie;
 import io.ashishworks.moviecatalogueservice.models.Rating;
+import io.ashishworks.moviecatalogueservice.models.UserRating;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,18 +25,21 @@ public class MovieCatalogueResource {
     @Autowired
     private RestTemplate restTemplate;
 
-    @Autowired
-    private WebClient.Builder webClientbuilder;
+    /*@Autowired
+    private WebClient.Builder webClientbuilder;*/
 
     @RequestMapping("/{userId}")
     public List<CatologueItem> getCatalogue(@PathVariable("userId") String userId){
         //RestTemplate restTemplate = new RestTemplate();
+        UserRating ratings = restTemplate.getForObject("http://localhost:8082/ratings/users/"+ userId, UserRating.class);
 
-        List<Rating> ratings = Arrays.asList(
+        /*List<Rating> ratings = Arrays.asList(
            new Rating("1234",4),
                 new Rating("jabTakhaiJaan",3)
-        );
-        return ratings.stream().map(rating -> {
+        );*/
+
+        return ratings.getUserRating().stream().map(rating -> {
+            // For each movie id, call movie info Service and get details
            Movie movie =  restTemplate.getForObject("http://localhost:8081/movies/" + rating.getMovieId(), Movie.class);
             /*Movie  movie = webClientbuilder.build()
                     .get()
@@ -46,6 +50,7 @@ public class MovieCatalogueResource {
 
             return new CatologueItem(movie.getName(),"Sci-Fi",rating.getRating());
         })
+                //put them all together
                 .collect(Collectors.toList());
         //return Collections.singletonList(new CatologueItem("Transformers","Sci-fi",4));
     }
